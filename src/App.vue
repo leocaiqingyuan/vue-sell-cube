@@ -2,7 +2,7 @@
   <div id="app">
     <v-header :seller="seller"></v-header>
     <div class="tab-wrapper">
-      <tab :tabs="tabs" :initialIndex="1"></tab>
+      <tab :tabs="tabs" :initialIndex="0"></tab>
     </div>
   </div>
 </template>

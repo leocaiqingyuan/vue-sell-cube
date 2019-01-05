@@ -21,7 +21,7 @@
         @change="onChange"
       >
         <cube-slide-item v-for="(tab,index) in tabs" :key="index">
-          <component :is="tab.component" :data="tab.data"></component>
+          <component ref="component" :is="tab.component" :data="tab.data"></component>
         </cube-slide-item>
       </cube-slide>
     </div>
@@ -65,7 +65,9 @@
         }
       }
     },
-    mounted() {},
+    mounted() {
+      this.onChange(this.index)
+    },
     methods: {
       onScroll(pos) {
         // 单个tabBar的宽度
@@ -75,8 +77,13 @@
         const transform = -pos.x / slideWidth * tabBarWidth
         this.$refs.tabBar.setSliderTransform(transform)
       },
+      // tab 切换成功触发的事件
       onChange(current) {
         this.index = current
+        const instance = this.$refs.component[current]
+        if (instance && instance.fetch) {
+          instance.fetch()
+        }
       }
     }
   }
