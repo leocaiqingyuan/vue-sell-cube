@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="shopcart">
-      <div class="content" @click="toggleList">
+      <div class="content">
         <div class="content-left">
           <div class="logo-wrapper">
             <div class="logo" :class="{'highlight':totalCount>0}">
@@ -14,12 +14,13 @@
           <div class="price" :class="{'highlight':totalPrice>0}">￥{{totalPrice}}</div>
           <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
         </div>
-        <div class="content-right" @click="pay">
+        <div class="content-right">
           <div class="pay" :class="payClass">
             {{payDesc}}
           </div>
         </div>
       </div>
+      <!-- 小球 -->
       <div class="ball-container">
         <div v-for="(ball,index) in balls" :key="index">
           <transition
@@ -41,11 +42,11 @@
 
   const BALL_LEN = 10
   const innerClsHook = 'inner-hook'
-
-  function createBalls() {
+  // 创建小球
+  function createBalls () {
     let balls = []
     for (let i = 0; i < BALL_LEN; i++) {
-      balls.push({show: false})
+      balls.push({ show: false })
     }
     return balls
   }
@@ -53,54 +54,51 @@
   export default {
     name: 'shop-cart',
     props: {
+      // 已选商品
       selectFoods: {
         type: Array,
-        default() {
+        default () {
           return []
         }
       },
+      // 配送费
       deliveryPrice: {
         type: Number,
         default: 0
       },
+      // 最小起送费
       minPrice: {
         type: Number,
         default: 0
-      },
-      sticky: {
-        type: Boolean,
-        default: false
-      },
-      fold: {
-        type: Boolean,
-        default: true
       }
     },
-    data() {
+    data () {
       return {
-        balls: createBalls(),
-        listFold: this.fold
+        balls: createBalls()
       }
     },
-    created() {
+    created () {
       this.dropBalls = []
     },
     computed: {
-      totalPrice() {
+      // 总价
+      totalPrice () {
         let total = 0
         this.selectFoods.forEach((food) => {
           total += food.price * food.count
         })
         return total
       },
-      totalCount() {
+      // 购物车商品总数量
+      totalCount () {
         let count = 0
         this.selectFoods.forEach((food) => {
           count += food.count
         })
         return count
       },
-      payDesc() {
+      // 描述
+      payDesc () {
         if (this.totalPrice === 0) {
           return `￥${this.minPrice}元起送`
         } else if (this.totalPrice < this.minPrice) {
@@ -110,7 +108,7 @@
           return '去结算'
         }
       },
-      payClass() {
+      payClass () {
         if (!this.totalCount || this.totalPrice < this.minPrice) {
           return 'not-enough'
         } else {
@@ -119,29 +117,6 @@
       }
     },
     methods: {
-      toggleList() {
-        if (this.listFold) {
-          if (!this.totalCount) {
-            return
-          }
-          this.listFold = false
-          this._showShopCartList()
-          this._showShopCartSticky()
-        } else {
-          this.listFold = true
-          this._hideShopCartList()
-        }
-      },
-      pay(e) {
-        if (this.totalPrice < this.minPrice) {
-          return
-        }
-        this.$createDialog({
-          title: '支付',
-          content: `您需要支付${this.totalPrice}元`
-        }).show()
-        e.stopPropagation()
-      },
       drop(el) {
         for (let i = 0; i < this.balls.length; i++) {
           const ball = this.balls[i]
@@ -154,9 +129,17 @@
         }
       },
       beforeDrop(el) {
+        /**
+         * 小球初始位置
+         * 即按钮的位置
+         * */
+        // 取出最后一个小球
         const ball = this.dropBalls[this.dropBalls.length - 1]
+        // 使用 DOM 的api获取元素的位置信息
         const rect = ball.el.getBoundingClientRect()
+        // 32 是购物车上小球距离左边的距离，x是小球需要移动的x轴距离
         const x = rect.left - 32
+        // 22 是购物车上小球距离底部的距离
         const y = -(window.innerHeight - rect.top - 22)
         el.style.display = ''
         el.style.transform = el.style.webkitTransform = `translate3d(0,${y}px,0)`
@@ -164,68 +147,27 @@
         inner.style.transform = inner.style.webkitTransform = `translate3d(${x}px,0,0)`
       },
       dropping(el, done) {
+        /**
+         * 动画结束小球的位置
+         * 即小球本身的位置
+         * */
+        // 触发重绘，transition内部是这样实现的
         this._reflow = document.body.offsetHeight
         el.style.transform = el.style.webkitTransform = `translate3d(0,0,0)`
         const inner = el.getElementsByClassName(innerClsHook)[0]
-        inner.style.transform = inner.style.webkitTransform = `translate3d(0,0,0)`
+        inner.style.transform = `translate3d(0,0,0)`
         el.addEventListener('transitionend', done)
       },
       afterDrop(el) {
+        // 取出第一个小球
         const ball = this.dropBalls.shift()
         if (ball) {
           ball.show = false
           el.style.display = 'none'
         }
-      },
-      _showShopCartList() {
-        this.shopCartListComp = this.shopCartListComp || this.$createShopCartList({
-          $props: {
-            selectFoods: 'selectFoods'
-          },
-          $events: {
-            leave: () => {
-              this._hideShopCartSticky()
-            },
-            hide: () => {
-              this.listFold = true
-            },
-            add: (el) => {
-              this.shopCartStickyComp.drop(el)
-            }
-          }
-        })
-        this.shopCartListComp.show()
-      },
-      _showShopCartSticky() {
-        this.shopCartStickyComp = this.shopCartStickyComp || this.$createShopCartSticky({
-          $props: {
-            selectFoods: 'selectFoods',
-            deliveryPrice: 'deliveryPrice',
-            minPrice: 'minPrice',
-            fold: 'listFold',
-            list: this.shopCartListComp
-          }
-        })
-        this.shopCartStickyComp.show()
-      },
-      _hideShopCartList() {
-        const list = this.sticky ? this.$parent.list : this.shopCartListComp
-        list.hide && list.hide()
-      },
-      _hideShopCartSticky() {
-        this.shopCartStickyComp.hide()
       }
     },
-    watch: {
-      fold(newVal) {
-        this.listFold = newVal
-      },
-      totalCount(count) {
-        if (!this.fold && count === 0) {
-          this._hideShopCartList()
-        }
-      }
-    },
+    watch: {},
     components: {
       Bubble
     }
@@ -238,13 +180,16 @@
 
   .shopcart
     height: 100%
+
     .content
       display: flex
       background: $color-background
       font-size: 0
       color: $color-light-grey
+
       .content-left
         flex: 1
+
         .logo-wrapper
           display: inline-block
           vertical-align: top
@@ -257,24 +202,30 @@
           box-sizing: border-box
           border-radius: 50%
           background: $color-background
+
           .logo
             width: 100%
             height: 100%
             border-radius: 50%
             text-align: center
             background: $color-dark-grey
+
             &.highlight
               background: $color-blue
+
             .icon-shopping_cart
               line-height: 44px
               font-size: $fontsize-large-xxx
               color: $color-light-grey
+
               &.highlight
                 color: $color-white
+
           .num
             position: absolute
             top: 0
             right: 0
+
         .price
           display: inline-block
           vertical-align: top
@@ -285,28 +236,35 @@
           border-right: 1px solid rgba(255, 255, 255, 0.1)
           font-weight: 700
           font-size: $fontsize-large
+
           &.highlight
             color: $color-white
+
         .desc
           display: inline-block
           vertical-align: top
           margin: 12px 0 0 12px
           line-height: 24px
           font-size: $fontsize-small-s
+
       .content-right
         flex: 0 0 105px
         width: 105px
+
         .pay
           height: 48px
           line-height: 48px
           text-align: center
           font-weight: 700
           font-size: $fontsize-small
+
           &.not-enough
             background: $color-dark-grey
+
           &.enough
             background: $color-green
             color: $color-white
+
     .ball-container
       .ball
         position: fixed
@@ -314,6 +272,7 @@
         bottom: 22px
         z-index: 200
         transition: all 0.4s cubic-bezier(0.49, -0.29, 0.75, 0.41)
+
         .inner
           width: 16px
           height: 16px

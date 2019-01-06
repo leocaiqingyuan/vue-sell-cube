@@ -15,7 +15,6 @@
         >
           <ul>
             <li
-              @click="selectFood(food)"
               v-for="food in good.foods"
               :key="food.name"
               class="food-item"
@@ -33,17 +32,33 @@
                   <span class="now">￥{{food.price}}</span>
                   <span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
                 </div>
+                <!-- 添加商品按钮 -->
+                <div class="cart-control-wrapper">
+                  <cart-control
+                    :food="food"
+                    @add="onAdd"></cart-control>
+                </div>
               </div>
             </li>
           </ul>
         </cube-scroll-nav-panel>
       </cube-scroll-nav>
     </div>
+    <!-- 购物车 -->
+    <div class="shop-cart-wrapper">
+      <shop-cart
+        ref="shopCart"
+        :select-foods="selectFoods"
+        :delivery-price="seller.deliveryPrice"
+        :min-price="seller.minPrice"></shop-cart>
+    </div>
   </div>
 </template>
 
 <script>
   import { getGoods } from 'api'
+  import ShopCart from 'components/shop-cart/shop-cart'
+  import CartControl from 'components/cart-control/cart-control'
 
   export default {
     name: 'goods',
@@ -68,6 +83,18 @@
     computed: {
       seller () {
         return this.data.seller
+      },
+      // 选中商品数组
+      selectFoods () {
+        let foods = []
+        this.goods.forEach((good) => {
+          good.foods.forEach((food) => {
+            if (food.count) {
+              foods.push(food)
+            }
+          })
+        })
+        return foods
       }
     },
     methods: {
@@ -75,9 +102,16 @@
         getGoods().then((goods) => {
           this.goods = goods
         })
+      },
+      // 小球飞入动画
+      onAdd (el) {
+        this.$refs.shopCart.drop(el)
       }
     },
-    components: {}
+    components: {
+      ShopCart,
+      CartControl
+    }
   }
 </script>
 
