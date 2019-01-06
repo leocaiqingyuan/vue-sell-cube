@@ -7,6 +7,27 @@
         :options="scrollOptions"
         v-if="goods.length"
       >
+        <!-- 定制化侧边栏内容 -->
+        <template slot="bar" slot-scope="props">
+          <cube-scroll-nav-bar
+            direction="vertical"
+            :labels="props.labels"
+            :txts="barTxts"
+            :current="props.current">
+            <template slot-scope="props">
+              <div class="text">
+                <support-ico
+                  v-if="props.txt.type>=1"
+                  :size="3"
+                  :type="props.txt.type"></support-ico>
+                <span>{{props.txt.name}}</span>
+                <span class="num" v-if="props.txt.count">
+                  <bubble :num="props.txt.count"></bubble>
+                </span>
+              </div>
+            </template>
+          </cube-scroll-nav-bar>
+        </template>
         <cube-scroll-nav-panel
           v-for="good in goods"
           :key="good.name"
@@ -59,6 +80,8 @@
   import { getGoods } from 'api'
   import ShopCart from 'components/shop-cart/shop-cart'
   import CartControl from 'components/cart-control/cart-control'
+  import SupportIco from 'components/support-ico/support-ico'
+  import Bubble from 'components/bubble/bubble'
 
   export default {
     name: 'goods',
@@ -95,6 +118,23 @@
           })
         })
         return foods
+      },
+      // 构建cube-scroll-nav-bar需要的props txt数据结构
+      barTxts() {
+        let ret = []
+        this.goods.forEach((goods) => {
+          const { type, name, foods } = goods
+          let count = 0
+          foods.forEach((food) => {
+            count += food.count || 0
+          })
+          ret.push({
+            type,
+            name,
+            count
+          })
+        })
+        return ret
       }
     },
     methods: {
@@ -110,7 +150,9 @@
     },
     components: {
       ShopCart,
-      CartControl
+      CartControl,
+      SupportIco,
+      Bubble
     }
   }
 </script>
