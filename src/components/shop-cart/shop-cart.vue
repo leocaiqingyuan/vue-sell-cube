@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="shopcart">
-      <div class="content">
+      <div class="content" @click="toggleList">
         <div class="content-left">
           <div class="logo-wrapper">
             <div class="logo" :class="{'highlight':totalCount>0}">
@@ -74,7 +74,8 @@
     },
     data () {
       return {
-        balls: createBalls()
+        balls: createBalls(),
+        listFold: true // 购物车弹层是否展开
       }
     },
     created () {
@@ -117,6 +118,36 @@
       }
     },
     methods: {
+      toggleList () {
+        if (this.listFold) {
+          if (!this.totalCount) {
+            return
+          }
+          this.listFold = false
+          this._showShopCartList()
+        } else {
+          this.listFold = true
+          this._hideShopCartList()
+        }
+      },
+      // 显示购物车弹层
+      _showShopCartList () {
+        this.shopCartListComp = this.shopCartListComp || this.$createShopCartList({
+          $props: {
+            selectFoods: 'selectFoods'
+          },
+          $events: {
+            hide: () => {
+              this.listFold = true
+            }
+          }
+        })
+        this.shopCartListComp.show()
+      },
+      // 隐藏购物车弹层
+      _hideShopCartList () {
+        this.shopCartListComp.hide()
+      },
       drop(el) {
         for (let i = 0; i < this.balls.length; i++) {
           const ball = this.balls[i]
