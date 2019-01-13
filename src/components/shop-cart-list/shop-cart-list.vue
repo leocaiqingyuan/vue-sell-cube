@@ -10,6 +10,7 @@
     >
       <transition
         name="move"
+        @after-leave="afterLeave"
       >
         <div v-show="visible">
           <div class="list-header">
@@ -45,7 +46,7 @@
 
   const EVENT_ADD = 'add'
   const EVENT_HIDE = 'hide'
-
+  const EVENT_LEAVE = 'leave'
   export default {
     name: 'shop-cart-list',
     mixins: [popupMixin],
@@ -93,6 +94,9 @@
       hide () {
         this.visible = false
         this.$emit(EVENT_HIDE)
+      },
+      afterLeave () {
+        this.$emit(EVENT_LEAVE)
       }
     },
     components: {

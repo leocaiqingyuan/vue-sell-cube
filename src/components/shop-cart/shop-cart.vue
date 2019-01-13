@@ -70,12 +70,20 @@
       minPrice: {
         type: Number,
         default: 0
+      },
+      sticky: {
+        type: Boolean,
+        default: false
+      },
+      fold: {
+        type: Boolean,
+        default: true
       }
     },
     data () {
       return {
         balls: createBalls(),
-        listFold: true // 购物车弹层是否展开
+        listFold: this.fold // 购物车弹层是否展开
       }
     },
     created () {
@@ -125,6 +133,7 @@
           }
           this.listFold = false
           this._showShopCartList()
+          this._showShopCartSticky()
         } else {
           this.listFold = true
           this._hideShopCartList()
@@ -137,6 +146,9 @@
             selectFoods: 'selectFoods'
           },
           $events: {
+            leave: () => {
+              this._hideShopCartSticky()
+            },
             hide: () => {
               this.listFold = true
             }
@@ -144,9 +156,27 @@
         })
         this.shopCartListComp.show()
       },
+      _showShopCartSticky () {
+        this.shopCartStickyComp = this.shopCartStickyComp || this.$createShopCartSticky({
+          $props: {
+            selectFoods: 'selectFoods',
+            deliveryPrice: 'deliveryPrice',
+            minPrice: 'minPrice',
+            fold: 'listFold',
+            list: this.shopCartListComp
+          }
+        })
+        this.shopCartStickyComp.show()
+      },
       // 隐藏购物车弹层
       _hideShopCartList () {
-        this.shopCartListComp.hide()
+        // sticky 复用了shopcart组件
+        const list = this.sticky ? this.$parent.list : this.shopCartListComp
+        list.hide && list.hide()
+      },
+      // 隐藏sticky
+      _hideShopCartSticky() {
+        this.shopCartStickyComp.hide()
       },
       drop(el) {
         for (let i = 0; i < this.balls.length; i++) {
@@ -198,7 +228,11 @@
         }
       }
     },
-    watch: {},
+    watch: {
+      fold(newVal) {
+        this.listFold = newVal
+      }
+    },
     components: {
       Bubble
     }
