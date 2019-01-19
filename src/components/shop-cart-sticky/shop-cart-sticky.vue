@@ -49,6 +49,7 @@
       }
     },
     methods: {
+      // 点击购物车列表按钮，商品飞入效果
       drop(el) {
         this.$refs.shopCart.drop(el)
       },

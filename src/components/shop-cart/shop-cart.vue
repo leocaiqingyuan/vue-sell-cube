@@ -14,7 +14,7 @@
           <div class="price" :class="{'highlight':totalPrice>0}">￥{{totalPrice}}</div>
           <div class="desc">另需配送费￥{{deliveryPrice}}元</div>
         </div>
-        <div class="content-right">
+        <div class="content-right" @click.stop="pay">
           <div class="pay" :class="payClass">
             {{payDesc}}
           </div>
@@ -139,6 +139,16 @@
           this._hideShopCartList()
         }
       },
+      pay (e) {
+        if (this.totalPrice < this.minPrice) {
+          return
+        }
+        this.$createDialog({
+          title: '支付',
+          content: `您需要支付${this.totalPrice}元`
+        }).show()
+        // e.stopPropagation()
+      },
       // 显示购物车弹层
       _showShopCartList () {
         this.shopCartListComp = this.shopCartListComp || this.$createShopCartList({
@@ -146,11 +156,15 @@
             selectFoods: 'selectFoods'
           },
           $events: {
+            // 接收子组件抛出来的事件
             leave: () => {
               this._hideShopCartSticky()
             },
             hide: () => {
               this.listFold = true
+            },
+            add: (el) => {
+              this.shopCartStickyComp.drop(el)
             }
           }
         })
@@ -231,6 +245,11 @@
     watch: {
       fold(newVal) {
         this.listFold = newVal
+      },
+      totalCount (count) {
+        if (!this.fold && count === 0) {
+          this._hideShopCartList()
+        }
       }
     },
     components: {

@@ -90,6 +90,9 @@
       },
       show () {
         this.visible = true
+        this.$nextTick(() => {
+          this.$refs.listContent.refresh()
+        })
       },
       hide () {
         this.visible = false
