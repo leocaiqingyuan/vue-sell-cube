@@ -44,8 +44,8 @@
   import CartControl from 'components/cart-control/cart-control'
   import popupMixin from 'common/mixins/popup'
 
+  const EVENT_SHOW = 'show'
   const EVENT_ADD = 'add'
-  const EVENT_HIDE = 'hide'
   const EVENT_LEAVE = 'leave'
   export default {
     name: 'shop-cart-list',
@@ -64,7 +64,11 @@
       }
     },
     created() {
-
+      this.$on(EVENT_SHOW, () => {
+        this.$nextTick(() => {
+          this.$refs.listContent.refresh()
+        })
+      })
     },
     methods: {
       onAdd(target) {
@@ -74,7 +78,7 @@
         this.hide()
       },
       empty() {
-        this.dialogComp = this.$createDialog({
+        this.$createDialog({
           type: 'confirm',
           content: '清空购物车？',
           $events: {
@@ -85,18 +89,7 @@
               this.hide()
             }
           }
-        })
-        this.dialogComp.show()
-      },
-      show () {
-        this.visible = true
-        this.$nextTick(() => {
-          this.$refs.listContent.refresh()
-        })
-      },
-      hide () {
-        this.visible = false
-        this.$emit(EVENT_HIDE)
+        }).show()
       },
       afterLeave () {
         this.$emit(EVENT_LEAVE)

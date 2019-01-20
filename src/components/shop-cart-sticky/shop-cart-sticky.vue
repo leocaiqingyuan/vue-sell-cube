@@ -14,9 +14,11 @@
 
 <script>
   import ShopCart from 'components/shop-cart/shop-cart'
+  import popupMixin from 'common/mixins/popup'
 
   export default {
     name: 'shop-cart-sticky',
+    mixins: [popupMixin],
     props: {
       selectFoods: {
         type: Array,
@@ -52,12 +54,6 @@
       // 点击购物车列表按钮，商品飞入效果
       drop(el) {
         this.$refs.shopCart.drop(el)
-      },
-      show() {
-        this.visible = true
-      },
-      hide () {
-        this.visible = false
       }
     },
     components: {

@@ -139,9 +139,13 @@
     },
     methods: {
       fetch () {
-        getGoods().then((goods) => {
-          this.goods = goods
-        })
+        // 设置缓存
+        if (!this.fetched) {
+          this.fetched = true
+          getGoods().then((goods) => {
+            this.goods = goods
+          })
+        }
       },
       // 小球飞入动画
       onAdd (el) {
