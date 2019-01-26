@@ -30,12 +30,12 @@
               </div>
             </transition>
           </div>
-          <!--<split v-show="food.info"></split>-->
+          <split v-show="food.info"></split>
           <div class="info" v-show="food.info">
             <h1 class="title">商品信息</h1>
             <p class="text">{{food.info}}</p>
           </div>
-          <!--<split></split>-->
+          <split></split>
           <div class="rating">
             <h1 class="title">商品评价</h1>
             <!--<rating-select-->
@@ -70,6 +70,7 @@
 
 <script type="text/ecmascript-6">
   import CartControl from 'components/cart-control/cart-control'
+  import Split from 'components/split/split'
   import popupMixin from 'common/mixins/popup'
 
   const EVENT_SHOW = 'show'
@@ -111,14 +112,16 @@
       },
       addFirst(event) {
         this.$set(this.food, 'count', 1)
+        // 触发小球的drop效果，所以需要派发一个add事件
         this.$emit(EVENT_ADD, event.target)
       },
       addFood(target) {
         this.$emit(EVENT_ADD, target)
-      },
+      }
     },
     components: {
-      CartControl
+      CartControl,
+      Split
     }
   }
 </script>
