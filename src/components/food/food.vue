@@ -38,14 +38,18 @@
           <split></split>
           <div class="rating">
             <h1 class="title">商品评价</h1>
-            <!--<rating-select-->
-              <!--:desc="desc"-->
-              <!--:ratings="ratings">-->
-            <!--</rating-select>-->
+            <rating-select
+              :desc="desc"
+              @select="onSelect"
+              :ratings="ratings"
+              :selectType="selectType"
+              @toggle="onToggle"
+              :onlyContent="onlyContent">
+            </rating-select>
             <div class="rating-wrapper">
-              <ul v-show="ratings || ratings.length">
+              <ul v-show="computedRatings || computedRatings.length">
                 <li
-                  v-for="(rating,index) in ratings"
+                  v-for="(rating,index) in computedRatings"
                   class="rating-item border-bottom-1px"
                   :key="index"
                 >
@@ -71,8 +75,11 @@
 <script type="text/ecmascript-6">
   import CartControl from 'components/cart-control/cart-control'
   import Split from 'components/split/split'
+  import RatingSelect from 'components/rating-select/rating-select'
   import popupMixin from 'common/mixins/popup'
   import moment from 'moment'
+
+  const ALL = 2
 
   const EVENT_SHOW = 'show'
   const EVENT_ADD = 'add'
@@ -88,6 +95,8 @@
     },
     data() {
       return {
+        onlyContent: true,
+        selectType: ALL,
         desc: {
           all: '全部',
           positive: '推荐',
@@ -98,6 +107,20 @@
     computed: {
       ratings() {
         return this.food.ratings
+      },
+      computedRatings() {
+        let ret = []
+        this.ratings.forEach((rating) => {
+          // 只看有内容的评价，当rating.text没有内容，则过滤掉
+          if (this.onlyContent && !rating.text) {
+            return
+          }
+          // 选择类型为全部 或者 评论类型 === 选择类型
+          if (this.selectType === ALL || rating.rateType === this.selectType) {
+            ret.push(rating)
+          }
+        })
+        return ret
       }
     },
     created() {
@@ -121,11 +144,18 @@
       },
       format(time) {
         return moment(time).format('YYYY-MM-DD hh:mm')
+      },
+      onSelect(type) {
+        this.selectType = type
+      },
+      onToggle() {
+        this.onlyContent = !this.onlyContent
       }
     },
     components: {
       CartControl,
-      Split
+      Split,
+      RatingSelect
     }
   }
 </script>
