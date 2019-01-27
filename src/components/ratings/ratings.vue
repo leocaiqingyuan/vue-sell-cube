@@ -1,5 +1,5 @@
 <template>
-  <cube-scroll ref="scroll" class="ratings" :options="scrollOptions">
+  <cube-scroll ref="scroll" class="ratings" :data="computedRatings" :options="scrollOptions">
     <div class="ratings-content">
       <div class="overview">
         <div class="overview-left">
@@ -25,14 +25,15 @@
         </div>
       </div>
       <split></split>
-      <!--<rating-select-->
-        <!--@select="onSelect"-->
-        <!--@toggle="onToggle"-->
-        <!--:selectType="selectType"-->
-        <!--:onlyContent="onlyContent"-->
-        <!--:ratings="ratings"-->
-      <!--&gt;-->
-      <!--</rating-select>-->
+      <rating-select
+        v-if="computedRatings.length"
+        @select="onSelect"
+        @toggle="onToggle"
+        :selectType="selectType"
+        :onlyContent="onlyContent"
+        :ratings="ratings"
+      >
+      </rating-select>
       <div class="rating-wrapper">
         <ul>
           <li
@@ -73,7 +74,7 @@
 
 <script>
   import Star from 'components/star/star'
-  // import RatingSelect from 'components/rating-select/rating-select'
+  import RatingSelect from 'components/rating-select/rating-select'
   import Split from 'components/split/split'
   import ratingMixin from 'common/mixins/rating'
   import { getRatings } from 'api'
@@ -119,7 +120,7 @@
     components: {
       Star,
       Split,
-      // RatingSelect
+      RatingSelect
     },
     watch: {
       selectType () {
