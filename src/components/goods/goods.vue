@@ -36,6 +36,7 @@
         >
           <ul>
             <li
+              @click="selectFood(food)"
               v-for="food in good.foods"
               :key="food.name"
               class="food-item"
@@ -150,6 +151,41 @@
       // 小球飞入动画
       onAdd (el) {
         this.$refs.shopCart.drop(el)
+      },
+      selectFood(food) {
+        this.selectedFood = food
+        this._showFood()
+        this._showShopCartSticky()
+      },
+      _showFood() {
+        this.foodComp = this.foodComp || this.$createFood({
+          $props: {
+            food: 'selectedFood'
+          },
+          $events: {
+            add: (target) => {
+              this.shopCartStickyComp.drop(target)
+            },
+            leave: () => {
+              this._hideShopCartSticky()
+            }
+          }
+        })
+        this.foodComp.show()
+      },
+      _showShopCartSticky() {
+        this.shopCartStickyComp = this.shopCartStickyComp || this.$createShopCartSticky({
+          $props: {
+            selectFoods: 'selectFoods',
+            deliveryPrice: this.seller.deliverPrice,
+            minPrice: this.seller.minPrice,
+            fold: true
+          }
+        })
+        this.shopCartStickyComp.show()
+      },
+      _hideShopCartSticky() {
+        this.shopCartStickyComp.hide()
       }
     },
     components: {
